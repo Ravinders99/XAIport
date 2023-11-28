@@ -46,13 +46,10 @@ transform = transforms.Compose([
 
 # dataset_path = f"{current_dir}{detail_dir}"
 
-current_dir = "/home/z/Music/devnew_xaiservice/XAIport"
-dataset_dirs = [
-    "/data/image/test_dataset",
-    "/data/image/test_dataset_perturbation_gaussian_noise_3"
-]
+current_dir = "/home/z/Music/devnew_xaiservice/XAIport/"
 
-def resnet_run(dataset_dirs):
+
+def resnet_xai_run(dataset_dirs):
 
 
     for detail_dir in dataset_dirs:
@@ -272,4 +269,3 @@ def resnet_run(dataset_dirs):
 
             print(f"{CAM_ALGORITHM} processing completed.")
 
-resnet_run(dataset_dirs)

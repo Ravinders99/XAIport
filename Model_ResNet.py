@@ -38,10 +38,7 @@ def ensure_rgb(img):
 current_dir = "XAIport"
 #dataset_path = f"{current_dir}/imagenet/val_images10k"
 
-dataset_paths = [
-    "data/image/test_dataset",
-    "data/image/test_dataset_perturbation_gaussian_noise_3"
-]
+
 
 original_dataset_probs = None
 # for dataset_path in dataset_paths: 部分
@@ -169,4 +166,3 @@ def resnet_run(dataset_paths):
 
         print(f"Metrics saved to {metrics_path}")
 
-resnet_run(dataset_paths)
