@@ -49,7 +49,7 @@ transform = transforms.Compose([
 current_dir = "/home/z/Music/devnew_xaiservice/XAIport/"
 
 
-def resnet_xai_run(dataset_dirs):
+def xai_run(dataset_dirs):
 
 
     for detail_dir in dataset_dirs:

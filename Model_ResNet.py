@@ -45,7 +45,7 @@ original_dataset_probs = None
 
 
 
-def resnet_run(dataset_paths):
+def model_run(dataset_paths):
     for dataset_path in dataset_paths:
         dataset = load_images_from_directory(dataset_path)
 

@@ -139,5 +139,6 @@ class DataProcess:
                         print(f"Saved perturbed image to {perturbed_path}")
                     except Exception as e:
                         print(f"Failed to process file: {file_path}, Error: {e}")
+        return perturbed_folder_path
 
 
