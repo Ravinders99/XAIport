@@ -22,14 +22,10 @@ class DataProcess:
             os.makedirs(dataset_dir)
 
         for file in data_files:
-            label = os.path.basename(os.path.dirname(file))  # 提取标签
-            label_dir = os.path.join(dataset_dir, label)  # 标签目录路径
-            if not os.path.exists(label_dir):
-                os.makedirs(label_dir)
-
-            file_extension = os.path.splitext(file)[1]
+            file_extension = os.path.splitext(file)[1]  # Get file extension
             dest_file_name = os.path.splitext(os.path.basename(file))[0] + file_extension
-            shutil.copy(file, os.path.join(label_dir, dest_file_name))
+            shutil.copy(file, os.path.join(dataset_dir, dest_file_name))
+
 
         # 更新类属性
         self.datasets[dataset_id] = data_files
@@ -53,15 +49,9 @@ class DataProcess:
         dataset_dir = self.dataset_properties[dataset_id]["storage_address"]
 
         for file in data_files:
-            label = os.path.basename(os.path.dirname(file))  # 提取标签
-            label_dir = os.path.join(dataset_dir, label)  # 标签目录路径
-            if not os.path.exists(label_dir):
-                os.makedirs(label_dir)
-
             file_extension = os.path.splitext(file)[1]
             dest_file_name = os.path.splitext(os.path.basename(file))[0] + '_original' + file_extension
-            shutil.copy(file, os.path.join(label_dir, dest_file_name))
-
+            shutil.copy(file, os.path.join(dataset_dir, dest_file_name))
 
 
         self.datasets[dataset_id].extend(data_files)
@@ -110,34 +100,21 @@ class DataProcess:
 
         dataset_dir = self.dataset_properties[dataset_id]["storage_address"]
 
-        # New folder for perturbed images
+        # Create new folder for perturbed images with the perturbation details in the folder name
         perturbed_folder_name = f"{dataset_id}_perturbation_{perturbation_func.__name__}_{severity}"
-        perturbed_folder_path = os.path.join(dataset_dir, '..', perturbed_folder_name)
+        perturbed_folder_path = os.path.join(os.path.dirname(dataset_dir), perturbed_folder_name)
         os.makedirs(perturbed_folder_path, exist_ok=True)
 
-        # Iterate over each label folder in the dataset
-        for label in os.listdir(dataset_dir):
-            label_dir = os.path.join(dataset_dir, label)
-            if not os.path.isdir(label_dir):
-                continue  # Skip if not a directory
+        for file in os.listdir(dataset_dir):
+            file_path = os.path.join(dataset_dir, file)
+            if os.path.isfile(file_path) and file.lower().endswith(('.png', '.jpg', '.jpeg')):
+                try:
+                    image = Image.open(file_path)
+                    perturbed_image = perturbation_func(image, severity)
 
-            # Create corresponding label folder in the perturbed folder
-            perturbed_label_dir = os.path.join(perturbed_folder_path, label)
-            os.makedirs(perturbed_label_dir, exist_ok=True)
-
-            # Process each image file within the label folder
-            for file in os.listdir(label_dir):
-                file_path = os.path.join(label_dir, file)
-                if os.path.isfile(file_path) and file.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    try:
-                        image = Image.open(file_path)
-                        perturbed_image = perturbation_func(image, severity)
-
-                        # Save perturbed image in the corresponding label folder
-                        perturbed_path = os.path.join(perturbed_label_dir, file)
-                        perturbed_image.save(perturbed_path)
-                        print(f"Saved perturbed image to {perturbed_path}")
-                    except Exception as e:
-                        print(f"Failed to process file: {file_path}, Error: {e}")
-
-
+                    # Save perturbed image in the new folder with the same file name
+                    perturbed_path = os.path.join(perturbed_folder_path, file)
+                    perturbed_image.save(perturbed_path)
+                    print(f"Saved perturbed image to {perturbed_path}")
+                except Exception as e:
+                    print(f"Failed to process file: {file_path}, Error: {e}")
