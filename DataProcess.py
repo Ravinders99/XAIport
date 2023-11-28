@@ -92,7 +92,6 @@ class DataProcess:
         c = [ImageFilter.BLUR, ImageFilter.GaussianBlur(2), ImageFilter.GaussianBlur(3), ImageFilter.GaussianBlur(5), ImageFilter.GaussianBlur(7)][severity - 1]
         return image.filter(c)
 
-
     def apply_image_perturbation(self, dataset_id, perturbation_func, severity=1):
         """ 对图像数据集应用变换（perturbation）"""
         if dataset_id not in self.datasets:
@@ -103,21 +102,29 @@ class DataProcess:
 
         dataset_dir = self.dataset_properties[dataset_id]["storage_address"]
 
+        # 新的父文件夹路径
+        new_parent_folder_name = f"{dataset_id}_perturbation_{perturbation_func.__name__}_{severity}"
+        new_parent_folder_path = os.path.join(os.path.dirname(dataset_dir), new_parent_folder_name)
+        os.makedirs(new_parent_folder_path, exist_ok=True)
+
         for subdir in os.listdir(dataset_dir):
             subdir_path = os.path.join(dataset_dir, subdir)
             if os.path.isdir(subdir_path):
-                # 假设 original 文件是子目录中唯一的文件
-                original_file = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f)) and 'original' in f]
-                if original_file:
-                    original_file_path = os.path.join(subdir_path, original_file[0])
-                    try:
-                        image = Image.open(original_file_path)
-                        perturbed_image = perturbation_func(image, severity)
-                        perturbed_path = os.path.join(subdir_path, 'perturbed.png')
-                        perturbed_image.save(perturbed_path)
-                        print(f"Saved perturbed image to {perturbed_path}")
-                    except Exception as e:
-                        print(f"Failed to process file: {original_file_path}, Error: {e}")
+                # 创建相应的新子目录
+                new_subdir_path = os.path.join(new_parent_folder_path, subdir)
+                os.makedirs(new_subdir_path, exist_ok=True)
 
+                # 处理子目录中的每个文件
+                for file in os.listdir(subdir_path):
+                    file_path = os.path.join(subdir_path, file)
+                    if os.path.isfile(file_path) and 'original' in file:
+                        try:
+                            image = Image.open(file_path)
+                            perturbed_image = perturbation_func(image, severity)
 
-
+                            # 保存扰动后的图像到新子目录，保持原始文件名
+                            perturbed_path = os.path.join(new_subdir_path, file)
+                            perturbed_image.save(perturbed_path)
+                            print(f"Saved perturbed image to {perturbed_path}")
+                        except Exception as e:
+                            print(f"Failed to process file: {file_path}, Error: {e}")
