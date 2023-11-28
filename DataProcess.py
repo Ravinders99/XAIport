@@ -3,6 +3,8 @@ import shutil
 from PIL import Image
 import numpy as np
 import random
+from PIL import Image, ImageFilter
+import numpy as np
 
 class DataProcess:
     def __init__(self):
@@ -91,7 +93,7 @@ class DataProcess:
         return image.filter(c)
 
 
-    def apply_image_perturbation(self, dataset_id, perturbation_func):
+    def apply_image_perturbation(self, dataset_id, perturbation_func, severity=1):
         """ 对图像数据集应用变换（perturbation）"""
         if dataset_id not in self.datasets:
             raise ValueError("Dataset ID does not exist.")
@@ -101,18 +103,21 @@ class DataProcess:
 
         dataset_dir = self.dataset_properties[dataset_id]["storage_address"]
 
-        for file_name in os.listdir(dataset_dir):
-            file_dir = os.path.join(dataset_dir, file_name)
-            original_file_path = os.path.join(file_dir, 'original')
-            if os.path.isfile(original_file_path):
-                try:
-                    image = Image.open(original_file_path)
-                    perturbed_image = perturbation_func(image)
-                    perturbed_path = os.path.join(file_dir, 'perturbed.png')
-                    perturbed_image.save(perturbed_path)
-                except IOError:
-                    print(f"Failed to process file: {original_file_path}")
+        for subdir in os.listdir(dataset_dir):
+            subdir_path = os.path.join(dataset_dir, subdir)
+            if os.path.isdir(subdir_path):
+                # 假设 original 文件是子目录中唯一的文件
+                original_file = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f)) and 'original' in f]
+                if original_file:
+                    original_file_path = os.path.join(subdir_path, original_file[0])
+                    try:
+                        image = Image.open(original_file_path)
+                        perturbed_image = perturbation_func(image, severity)
+                        perturbed_path = os.path.join(subdir_path, 'perturbed.png')
+                        perturbed_image.save(perturbed_path)
+                        print(f"Saved perturbed image to {perturbed_path}")
+                    except Exception as e:
+                        print(f"Failed to process file: {original_file_path}, Error: {e}")
 
 
 
-def gaussian_noise(image):
