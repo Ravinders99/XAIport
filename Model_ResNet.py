@@ -72,8 +72,10 @@ def model_run(dataset_paths):
         predicted_labels = []
         predicted_probs = []
 
-        target_dir = dataset_path + "_" + model_name
+        dataset_name = os.path.basename(dataset_path)
+        target_dir = os.path.join("performance", dataset_path + "_" + model_name)
         os.makedirs(target_dir, exist_ok=True)
+        
         num_classes = 1000
 
         for img, label, filename in tqdm(dataset):
@@ -107,27 +109,27 @@ def model_run(dataset_paths):
             class_auc_scores.append(auc_score)
         roc_auc_one_vs_rest = np.mean(class_auc_scores)
 
-        plt.figure()
-        plt.plot(fpr, tpr, color='blue', lw=2, label='Micro-Average ROC curve (area = {0:0.4f})'.format(roc_auc))
-        plt.plot([0, 1], [0, 1], 'k--', lw=2)
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('Micro-Average Receiver Operating Characteristic')
-        plt.legend(loc="lower right")
-        plt.show()
+        # plt.figure()
+        # plt.plot(fpr, tpr, color='blue', lw=2, label='Micro-Average ROC curve (area = {0:0.4f})'.format(roc_auc))
+        # plt.plot([0, 1], [0, 1], 'k--', lw=2)
+        # plt.xlim([0.0, 1.0])
+        # plt.ylim([0.0, 1.05])
+        # plt.xlabel('False Positive Rate')
+        # plt.ylabel('True Positive Rate')
+        # plt.title('Micro-Average Receiver Operating Characteristic')
+        # plt.legend(loc="lower right")
 
-        plt.figure()
-        plt.plot(range(num_classes), class_auc_scores, color='blue', lw=2, label='One-vs-All ROC curve (area = {0:0.4f})'.format(roc_auc_one_vs_rest))
-        plt.plot([0, num_classes], [0.5, 0.5], 'k--', lw=2)
-        plt.xlim([0, num_classes])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('Class')
-        plt.ylabel('AUC Score')
-        plt.title('One-vs-All Receiver Operating Characteristic')
-        plt.legend(loc="lower right")
-        plt.show()
+
+        # plt.figure()
+        # plt.plot(range(num_classes), class_auc_scores, color='blue', lw=2, label='One-vs-All ROC curve (area = {0:0.4f})'.format(roc_auc_one_vs_rest))
+        # plt.plot([0, num_classes], [0.5, 0.5], 'k--', lw=2)
+        # plt.xlim([0, num_classes])
+        # plt.ylim([0.0, 1.05])
+        # plt.xlabel('Class')
+        # plt.ylabel('AUC Score')
+        # plt.title('One-vs-All Receiver Operating Characteristic')
+        # plt.legend(loc="lower right")
+
 
         precision, recall, f1_score, _ = precision_recall_fscore_support(true_labels, predicted_labels, average='macro')
 
@@ -137,9 +139,15 @@ def model_run(dataset_paths):
         fn = cm.sum(axis=1) - tp
         tn = cm.sum() - (fp + fn + tp)
 
-        dataset_name = os.path.basename(dataset_path)
+
+
+        # 其他代码保持不变，直到结果的保存部分
+
         metrics_filename = f"{model_name}_{dataset_name}_metrics.txt"
         metrics_path = os.path.join(target_dir, metrics_filename)
+
+        # metrics_filename = f"{model_name}_{dataset_name}_metrics.txt"
+        # metrics_path = os.path.join(target_dir, metrics_filename)
         
         if dataset_path == dataset_paths[0]:
             original_dataset_probs = [max(probs) for probs in predicted_probs]  # 选择最高的概率值

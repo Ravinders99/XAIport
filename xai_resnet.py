@@ -177,14 +177,14 @@ def xai_run(dataset_dirs):
             ])
 
 
-            for batch_num in tqdm(range(num_batches)):
+            for batch_num in range(num_batches):
                 start_idx = batch_num * BATCH_SIZE
                 end_idx = min((batch_num + 1) * BATCH_SIZE, len(dataset))
 
                 # Initialize ResNet50
 
 
-                for idx in range(start_idx, end_idx):
+                for idx in tqdm(range(start_idx, end_idx)):
                     img, label, filename = dataset[idx]
                     try:
                         #torch.cuda.empty_cache()
