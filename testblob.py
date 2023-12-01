@@ -41,5 +41,5 @@ def download_file_from_blob(blob_name, download_file_name):
     print(f"'{blob_name}' 从 Blob 存储下载至 '{download_file_name}' 完成。")
 
 # 示例用法
-upload_file_to_blob("/home/z/Music/devnew_xaiservice/XAIport/dataprocess/datasets/t1/n01484850/ILSVRC2012_val_00004329_n01484850.JPEG", "0.JPEG")
-download_file_from_blob("0.JPEG", "2.JPEG")
+upload_file_to_blob("/home/z/Music/devnew_xaiservice/XAIport/testblob.py", "0.JPEG")
+# download_file_from_blob("0.JPEG", "2.JPEG")

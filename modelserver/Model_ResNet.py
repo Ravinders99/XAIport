@@ -18,6 +18,7 @@ from scipy.stats import ks_2samp
 def calculate_ks_statistic(distribution1, distribution2):
     ks_statistic, p_value = ks_2samp(distribution1, distribution2)
     return ks_statistic
+from cloudstorage import up_cloud, down_cloud
 # Function to load images
 
 def load_images_from_directory(root_path: str):
@@ -174,4 +175,13 @@ def model_run(dataset_paths):
             f.write(f"True Negatives (per class): {tn.tolist()}\n")
 
         print(f"Metrics saved to {metrics_path}")
+
+        local_performance_path = "/home/z/Music/devnew_xaiservice/XAIport/modelserver/performance/datasets"
+        cloud_performance_path = "modelperformance"
+
+        # 执行上传
+        up_cloud(local_performance_path, cloud_performance_path)
+
+        print("Upload to cloud storage completed.")
+
 
