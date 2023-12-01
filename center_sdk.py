@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 import httpx
 import json
+import os
 
 app = FastAPI(title="Coordination Center")
 
@@ -14,22 +15,36 @@ async def async_http_post(url, json_data=None, files=None):
         else:
             response = await client.post(url)
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
+        # 检查是否是307重定向响应
+        if response.status_code == 307:
+            redirect_url = response.headers.get('Location')
+            if redirect_url:
+                print(f"Redirecting to {redirect_url}")
+                return await async_http_post(redirect_url, json_data, files)
+
+        if response.status_code != 200:
+            print(f"Error response: {response.text}")  # 打印出错误响应内容
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+
+        return response.json()
 
 
 # 处理上传配置
 async def process_upload_config(upload_config):
-    url = upload_config['server_url'] + "/upload-dataset/t1"
-    zip_path = upload_config['zip_path']
+    for dataset_id, dataset_info in upload_config['datasets'].items():
+        url = upload_config['server_url'] + f"/upload-dataset/{dataset_id}"
+        local_zip_file_path = dataset_info['local_zip_path']  # 每个数据集的本地 ZIP 文件路径
 
-    # 对于大文件，应考虑使用流式上传或更高效的方法
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, files={'zip_file': httpx.get(zip_path).content})
+        async with httpx.AsyncClient() as client:
+            with open(local_zip_file_path, 'rb') as f:
+                files = {'zip_file': (os.path.basename(local_zip_file_path), f)}
+                response = await client.post(url, files=files)
+            response.raise_for_status()
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # 可以添加更多的逻辑处理上传后的结果
+        print(f"Uploaded dataset {dataset_id} successfully.")
+
+
 
 
 # 处理扰动配置
@@ -52,12 +67,18 @@ async def process_model_config(model_config):
 async def process_xai_config(xai_config):
     base_url = xai_config['base_url']
     for dataset, settings in xai_config['datasets'].items():
+        dataset_id = settings.get('dataset_id', '')  # 提取 "dataset_id"
+        algorithms = settings.get('algorithms', [])  # 提取 "algorithms"
         data = {
-            "dataset_id": f"{dataset}_{settings['perturbation_type']}_{settings['severity']}",
-            "algorithms": settings['algorithms']
+            "dataset_id": dataset_id,
+            "algorithms": algorithms
         }
+        print(data)
         full_url = f"{base_url}/cam_xai/"
+        print(full_url)
         await async_http_post(full_url, json_data=data)
+
+
 
 
 # 处理评估配置
@@ -102,6 +123,26 @@ def load_config():
     with open("config.json", "r") as file:
         return json.load(file)
 
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+import asyncio
+import json
+
+# 假设您的处理函数和其他必要的导入已经完成
+
+# 加载配置文件
+def load_config():
+    with open("/home/z/Music/devnew_xaiservice/XAIport/task_sheets/task.json", "r") as file:
+        return json.load(file)
+
+
+
+# 主函数
+def main():
+    config = load_config()
+    asyncio.run(run_pipeline_from_config(config))
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8888)
+    main()

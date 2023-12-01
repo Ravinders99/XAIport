@@ -5,3 +5,4 @@ dataprocess/datasets
 temp/
 .env
 datasets/
+xairesult
