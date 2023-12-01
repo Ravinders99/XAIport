@@ -1,9 +1,9 @@
 import yaml
 import concurrent.futures
 import os
-import DataProcess
-import Model_ResNet
-import xai_resnet
+import dataprocess.DataProcess as DataProcess
+import modelserver.Model_ResNet as Model_ResNet
+import xaiserver.xai_resnet as xai_resnet
 import evaluation
 
 def run_task_from_yaml(yaml_file_path):

@@ -1,8 +1,8 @@
 import concurrent.futures
 import os
-import DataProcess
-import Model_ResNet
-import xai_resnet
+import dataprocess.DataProcess as DataProcess
+import modelserver.Model_ResNet as Model_ResNet
+import xaiserver.xai_resnet as xai_resnet
 import evaluation
 
 # 新函数：从 JSON 配置中运行任务

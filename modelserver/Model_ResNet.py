@@ -47,6 +47,7 @@ original_dataset_probs = None
 
 def model_run(dataset_paths):
     for dataset_path in dataset_paths:
+
         dataset = load_images_from_directory(dataset_path)
 
         with open("index/imagenet_class_index.json", "r") as f:

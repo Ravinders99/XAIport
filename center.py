@@ -1,5 +1,5 @@
 import os
-import DataProcess
+import dataprocess.DataProcess as DataProcess
 
 # DataProcess 
 data_processor = DataProcess.DataProcess()
@@ -30,8 +30,8 @@ dataset_paths = [
 
 # Model
 
-import Model_ResNet
-# dataset_paths1 = [
+import modelserver.Model_ResNet as Model_ResNet
+# dataset_paths = [
 #     "data/image/test_dataset",
 #     "data/image/test_dataset_perturbation_gaussian_noise_3"
 # ]
@@ -41,7 +41,7 @@ Model_ResNet.model_run(dataset_paths)
 
 ## XAI
 
-import xai_resnet
+import xaiserver.xai_resnet as xai_resnet
 xai_resnet.xai_run(dataset_paths)
 
 
