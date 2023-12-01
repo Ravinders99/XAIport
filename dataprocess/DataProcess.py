@@ -104,7 +104,7 @@ class DataProcess:
 
 
         # New folder for perturbed images
-        perturbed_folder_name = f"{dataset_id}_perturbation_{perturbation_func.__name__}_{severity}"
+        perturbed_folder_name = f"{dataset_id}_{perturbation_func.__name__}_{severity}"
         perturbed_folder_path = os.path.join(dataset_dir, '..', perturbed_folder_name)
         os.makedirs(perturbed_folder_path, exist_ok=True)
 

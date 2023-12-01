@@ -35,7 +35,6 @@ import modelserver.Model_ResNet as Model_ResNet
 #     "data/image/test_dataset",
 #     "data/image/test_dataset_perturbation_gaussian_noise_3"
 # ]
-# print(dataset_paths1)
 Model_ResNet.model_run(dataset_paths)
 
 
