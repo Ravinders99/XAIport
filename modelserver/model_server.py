@@ -36,38 +36,6 @@ async def run_model1_background(dataset_id: str, perturbation_func_name: str, se
     }
 
 
-
-# @app.post("/resnet/{dataset_id}/{perturbation_func_name}/{severity}")
-# async def run_model1_background(dataset_id: str, perturbation_func_name: str, severity: int, background_tasks: BackgroundTasks):
-#     # 定义本地数据集路径
-#     local_original_dataset_path = f"datasets/{dataset_id}"
-#     local_perturbed_dataset_path = f"datasets/{dataset_id}_{perturbation_func_name}_{severity}"
-
-#     # 异步下载原始数据集和受扰动数据集
-#     background_tasks.add_task(down_cloud, f"datasets/{dataset_id}", local_original_dataset_path)
-#     background_tasks.add_task(down_cloud, f"datasets/{dataset_id}/{perturbation_func_name}/{severity}", local_perturbed_dataset_path)
-
-#     # 构建 dataset_paths 列表
-#     dataset_paths = [local_original_dataset_path, local_perturbed_dataset_path]
-
-#     # 异步运行模型
-#     background_tasks.add_task(Model_ResNet.model_run, dataset_paths)
-
-#     # 定义 Performance 文件夹的本地路径
-#     local_performance_path = os.path.join("modelserver/performance/datasets")
-
-#     # 定义 Blob 存储中的目标路径
-#     cloud_performance_path = f"performance/"
-
-#     # 异步上传 Performance 文件夹到 Blob 存储
-#     background_tasks.add_task(up_cloud, local_performance_path, cloud_performance_path)
-
-#     return {
-#         "message": f"ResNet run for dataset {dataset_id} with perturbation {perturbation_func_name} and severity {severity} has started, results will be uploaded to Blob storage"
-#     }
-
-
-
 if __name__ == "__main__":
     import uvicorn
 

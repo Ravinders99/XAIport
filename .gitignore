@@ -1,5 +1,7 @@
 data/
 results/
+xaiserver/xairesult
 dataprocess/datasets
 temp/
 .env
+datasets/

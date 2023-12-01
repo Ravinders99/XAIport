@@ -18,6 +18,17 @@ import numpy as np
 import cv2
 import torch
 from tqdm import tqdm
+from cloudstorage import up_cloud, down_cloud
+
+# 在 cam_resnet 模块中定义
+CAM_ALGORITHMS_MAPPING = {
+    "GradCAM": GradCAM,
+    "HiResCAM": HiResCAM,
+    "GradCAMPlusPlus": GradCAMPlusPlus,
+    "XGradCAM": XGradCAM,
+    "LayerCAM": LayerCAM
+}
+
 
 # Function to load images
 def load_images_from_directory(root_path: str):
@@ -46,22 +57,30 @@ transform = transforms.Compose([
 
 # dataset_path = f"{current_dir}{detail_dir}"
 
-current_dir = "/home/z/Music/devnew_xaiservice/XAIport/"
-
-
-def xai_run(dataset_dirs):
-
-
-    for detail_dir in dataset_dirs:
-
-        dataset_path = f"{current_dir}{detail_dir}"
-        dataset = load_images_from_directory(dataset_path)
-
+#current_dir = "/home/z/Music/devnew_xaiservice/XAIport/"
+        # dataset_path = f"{current_dir}{detail_dir}"
         # dataset = load_images_from_directory(dataset_path)
+
+# def xai_run(dataset_dirs):
+#     for dataset_path in dataset_dirs:
+#         # 直接使用 dataset_path，因为它已经是完整的路径
+#         dataset = load_images_from_directory(dataset_path)
+
+#         with open("index/imagenet_class_index.json", "r") as f:
+#             imagenet_class_index = json.load(f)
+
+
+#CAM_ALGORITHMS = [GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, LayerCAM]
+
+def xai_run(dataset_dirs, cam_algorithms):
+    for dataset_path in dataset_dirs:
+        dataset = load_images_from_directory(dataset_path)
+        dataset_name = os.path.basename(dataset_path)
+        local_save_dir = os.path.join("xairesult", dataset_name)
+        cloud_save_dir = os.path.join("xairesult", dataset_name)
+
         with open("index/imagenet_class_index.json", "r") as f:
             imagenet_class_index = json.load(f)
-
-
         # Determine device
         if torch.cuda.is_available():
             device = torch.device("cuda")
@@ -90,9 +109,9 @@ def xai_run(dataset_dirs):
         # Options: GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, 
         # EigenGradCAM, LayerCAM, GradCAMElementWise
         # #    GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, LayerCAM, GradCAMElementWise
-        CAM_ALGORITHMS = [GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, LayerCAM]
+        # CAM_ALGORITHMS = [GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, LayerCAM]
 
-        for CAM_ALGORITHM in CAM_ALGORITHMS:
+        for CAM_ALGORITHM in cam_algorithms:
             cam_algorithm_name = CAM_ALGORITHM.__name__
                 
             def run_grad_cam_on_image(model: torch.nn.Module,
@@ -159,7 +178,8 @@ def xai_run(dataset_dirs):
             BATCH_SIZE = 100
             num_batches = len(dataset) // BATCH_SIZE + (1 if len(dataset) % BATCH_SIZE != 0 else 0)
 
-            save_dir = f"{current_dir}/results/{detail_dir}/resnet50/{cam_algorithm_name}"
+            #save_dir = f"{current_dir}/results/{detail_dir}/resnet50/{cam_algorithm_name}"
+            save_dir = os.path.join(local_save_dir, "resnet50", cam_algorithm_name)
 
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
@@ -266,6 +286,6 @@ def xai_run(dataset_dirs):
                                 f.write(f"Class {index} ({label}): {score:.2f}\n")
                     except Exception as e:
                         print(f"Error processing {filename}: {str(e)}")
-
+            up_cloud(save_dir, os.path.join(cloud_save_dir, "resnet50", cam_algorithm_name))
             print(f"{CAM_ALGORITHM} processing completed.")
 
