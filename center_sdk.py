@@ -130,16 +130,11 @@ def load_config():
 import asyncio
 import json
 
-# 假设您的处理函数和其他必要的导入已经完成
 
-# 加载配置文件
 def load_config():
     with open("/home/z/Music/devnew_xaiservice/XAIport/task_sheets/task.json", "r") as file:
         return json.load(file)
 
-
-
-# 主函数
 def main():
     config = load_config()
     asyncio.run(run_pipeline_from_config(config))
