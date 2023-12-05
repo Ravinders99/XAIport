@@ -6,3 +6,4 @@ temp/
 .env
 datasets/
 xairesult
+modelserver/datasets

@@ -17,10 +17,10 @@ def run_evaluation(dataset_id: str, model_name: str, perturbation_func: str, sev
         # 判断 perturbation_func 和 severity 是否被提供
         if perturbation_func and severity:
             attack_name = f"{perturbation_func}_{severity}"
-            rs_dir = f"/home/z/Music/devnew_xaiservice/XAIport/xaiserver/xairesult/{dataset_id}_{perturbation_func}_{severity}/{model_name}"
+            rs_dir = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}_{perturbation_func}_{severity}/{model_name}"
         else:
             attack_name = "Original"  # 或其他默认攻击名称
-            rs_dir = f"/home/z/Music/devnew_xaiservice/XAIport/xaiserver/xairesult/{dataset_id}/{model_name}"
+            rs_dir = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}/{model_name}"
 
         # 调用 cam_summary，传递正确的参数
         evaluation.cam_summary(rs_dir, model_name, attack_name, cam_algorithms)
