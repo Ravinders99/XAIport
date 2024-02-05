@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List
 import logging
 import cam_resnet
-from cloudstorage import up_cloud, down_cloud  # Assuming these functions are defined elsewhere
+from functionaltool.cloudstorage import up_cloud, down_cloud  # Assuming these functions are defined elsewhere
 
 app = FastAPI()
 

@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 import aiofiles
 import asyncio
 from azure.storage.blob.aio import BlobServiceClient
-from cloudstorage import up_cloud, down_cloud
+from functionaltool.cloudstorage import up_cloud, down_cloud
 
 class DataProcess:
     def __init__(self, base_storage_address):

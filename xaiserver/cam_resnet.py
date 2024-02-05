@@ -18,7 +18,7 @@ import numpy as np
 import cv2
 import torch
 from tqdm import tqdm
-from cloudstorage import up_cloud, down_cloud
+from functionaltool.cloudstorage import up_cloud, down_cloud
 
 # 在 cam_resnet 模块中定义
 CAM_ALGORITHMS_MAPPING = {

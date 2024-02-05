@@ -18,7 +18,7 @@ from scipy.stats import ks_2samp
 def calculate_ks_statistic(distribution1, distribution2):
     ks_statistic, p_value = ks_2samp(distribution1, distribution2)
     return ks_statistic
-from cloudstorage import up_cloud, down_cloud
+from functionaltool.cloudstorage import up_cloud, down_cloud
 # Function to load images
 
 def load_images_from_directory(root_path: str):
