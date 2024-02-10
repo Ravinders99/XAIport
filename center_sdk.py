@@ -1,3 +1,10 @@
+'''
+Version 0.0.1
+This is the previous try to create a server that can handle the pipeline of the XAI service.
+Without the status check system, we can't correctly run the whole pipeline.
+This must be reconstructed to a new version.
+'''
+
 from fastapi import FastAPI, HTTPException
 import httpx
 import json
