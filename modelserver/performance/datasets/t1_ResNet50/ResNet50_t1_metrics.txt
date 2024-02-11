@@ -1,9 +1,0 @@
-Micro-Average AUC: 0.99927
-One-vs-All Average AUC: nan
-Precision (macro-average): 0.42857
-Recall (macro-average): 0.37143
-F1 Score (macro-average): 0.39766
-True Positives (per class): [9, 8, 9, 0, 0, 0, 0]
-False Positives (per class): [0, 0, 0, 1, 1, 1, 1]
-False Negatives (per class): [1, 2, 1, 0, 0, 0, 0]
-True Negatives (per class): [20, 20, 20, 29, 29, 29, 29]

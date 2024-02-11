@@ -1,4 +1,13 @@
 {
+  "upload_config": {
+    "server_url": "http://0.0.0.0:8001",
+    "datasets": {
+      "t1204": {
+        "local_zip_path": "/home/z/Music/devnew_xaiservice/XAIport/dataprocess/val_images10k.zip"
+      }
+    }
+  },    
+
     "perturbation_config": {
       "server_url": "http://0.0.0.0:8001",
       "datasets": {

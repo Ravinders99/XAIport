@@ -18,7 +18,7 @@ import numpy as np
 import cv2
 import torch
 from tqdm import tqdm
-from functionaltool.cloudstorage import up_cloud, down_cloud
+# from functionaltool.cloudstorage import up_cloud, down_cloud
 
 # 在 cam_resnet 模块中定义
 CAM_ALGORITHMS_MAPPING = {
@@ -286,6 +286,6 @@ def xai_run(dataset_dirs, cam_algorithms):
                                 f.write(f"Class {index} ({label}): {score:.2f}\n")
                     except Exception as e:
                         print(f"Error processing {filename}: {str(e)}")
-            up_cloud(save_dir, os.path.join(cloud_save_dir, "resnet50", cam_algorithm_name))
+            # up_cloud(save_dir, os.path.join(cloud_save_dir, "resnet50", cam_algorithm_name))
             print(f"{CAM_ALGORITHM} processing completed.")
 

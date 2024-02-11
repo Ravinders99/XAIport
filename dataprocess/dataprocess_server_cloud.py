@@ -9,9 +9,29 @@ import zipfile
 from typing import List
 from fastapi import BackgroundTasks
 
+
+import importlib.util
+import sys
+
+module_name = 'functionaltool.cloudstorage'
+module_file_path = '/home/z/Music/devnew_xaiservice/XAIport/functionaltool/cloudstorage.py'
+
+spec = importlib.util.spec_from_file_location(module_name, module_file_path)
+module = importlib.util.module_from_spec(spec)
+sys.modules[module_name] = module
+spec.loader.exec_module(module)
+
+up_cloud = module.up_cloud
+down_cloud = module.down_cloud
+
+
+from functionaltool.cloudstorage import up_cloud, down_cloud
+
 app = FastAPI()
 
 data_processor = DataProcess.DataProcess(base_storage_address="datasets")
+
+
 
 @app.post("/upload-dataset/{dataset_id}")
 async def upload_dataset(dataset_id: str, zip_file: UploadFile = File(...)):
@@ -45,11 +65,13 @@ async def upload_dataset(dataset_id: str, zip_file: UploadFile = File(...)):
             with zip_ref.open(member, 'r') as source, open(target_path, 'wb') as target:
                 shutil.copyfileobj(source, target)
 
-    # cloud_upload_path = os.path.join("datasets", dataset_id)
-    # up_cloud(dataset_dir, cloud_upload_path)
+    # 在成功解压缩文件后，上传整个数据集文件夹到云存储
+    cloud_upload_path = os.path.join("datasets", dataset_id)
+    up_cloud(dataset_dir, cloud_upload_path)
 
-    # return {"message": "Dataset uploaded to local storage and Azure Blob Storage successfully"}
+    return {"message": "Dataset uploaded to local storage and Azure Blob Storage successfully"}
 
+    # Clean up
     os.remove(temp_file)
 
     return {"message": "Dataset uploaded and extracted successfully"}
@@ -102,4 +124,3 @@ async def apply_perturbation(background_tasks: BackgroundTasks, dataset_id: str,
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
-

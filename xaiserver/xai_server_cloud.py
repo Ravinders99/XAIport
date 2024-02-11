@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List
 import logging
 import cam_resnet
+from functionaltool.cloudstorage import up_cloud, down_cloud  # Assuming these functions are defined elsewhere
 
 app = FastAPI()
 
@@ -13,8 +14,8 @@ class XAIRequest(BaseModel):
 async def download_dataset(dataset_id: str) -> str:
     """Download the dataset and return the local dataset path."""
     try:
-        local_dataset_path = f"/home/z/Music/devnew_xaiservice/XAIport/datasets/{dataset_id}"
-        #down_cloud(f"datasets/{dataset_id}", local_dataset_path)
+        local_dataset_path = f"datasets/{dataset_id}"
+        down_cloud(f"datasets/{dataset_id}", local_dataset_path)
         return local_dataset_path
     except Exception as e:
         logging.error(f"Error downloading dataset {dataset_id}: {e}")

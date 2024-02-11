@@ -107,23 +107,34 @@ async def process_pipeline_step(config, step_key, process_function):
     if step_key in config:
         await process_function(config[step_key])
 
-# 从配置运行整个 Pipeline
-async def run_pipeline_from_config(config):
-    await process_pipeline_step(config, 'upload_config', process_upload_config)
-    await process_pipeline_step(config, 'perturbation_config', process_perturbation_config)
-    await process_pipeline_step(config, 'model_config', process_model_config)
-    await process_pipeline_step(config, 'xai_config', process_xai_config)
-    await process_pipeline_step(config, 'evaluation_config', process_evaluation_config)
+# # 从配置运行整个 Pipeline，这种不够灵活，需要改进
+# async def run_pipeline_from_config(config):
+#     await process_pipeline_step(config, 'upload_config', process_upload_config)
+#     await process_pipeline_step(config, 'perturbation_config', process_perturbation_config)
+#     await process_pipeline_step(config, 'model_config', process_model_config)
+#     await process_pipeline_step(config, 'xai_config', process_xai_config)
+#     await process_pipeline_step(config, 'evaluation_config', process_evaluation_config)
 
-# API 端点来触发 Pipeline
-@app.post("/run_pipeline/")
-async def run_pipeline():
-    config = load_config()  # 加载配置
-    try:
-        await run_pipeline_from_config(config)
-        return {"message": "Pipeline executed successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def run_pipeline_from_config(config):
+    # 定义步骤处理函数的映射
+    step_process_functions = {
+        'upload_config': process_upload_config,
+        'perturbation_config': process_perturbation_config,
+        'model_config': process_model_config,
+        'xai_config': process_xai_config,
+        'evaluation_config': process_evaluation_config,
+    }
+
+    # 从config动态获取要执行的步骤列表
+    for step_key in config.keys():
+        process_function = step_process_functions.get(step_key)
+        if process_function:
+            await process_function(config[step_key])
+            print(f"Completed processing {step_key}")
+
+
+
+
 
 # 加载配置文件
 def load_config():

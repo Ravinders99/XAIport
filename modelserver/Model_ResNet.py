@@ -18,7 +18,7 @@ from scipy.stats import ks_2samp
 def calculate_ks_statistic(distribution1, distribution2):
     ks_statistic, p_value = ks_2samp(distribution1, distribution2)
     return ks_statistic
-from functionaltool.cloudstorage import up_cloud, down_cloud
+#from functionaltool.cloudstorage import up_cloud, down_cloud
 # Function to load images
 
 def load_images_from_directory(root_path: str):
@@ -180,7 +180,7 @@ def model_run(dataset_paths):
         cloud_performance_path = "modelperformance"
 
         # 执行上传
-        up_cloud(local_performance_path, cloud_performance_path)
+        # up_cloud(local_performance_path, cloud_performance_path)
 
         print("Upload to cloud storage completed.")
 

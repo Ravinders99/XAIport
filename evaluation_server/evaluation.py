@@ -7,7 +7,7 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from functionaltool.cloudstorage import up_cloud, down_cloud
+#from functionaltool.cloudstorage import up_cloud, down_cloud
 
 current_script_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -272,4 +272,4 @@ def cam_summary(base_dir, model_name, attack_name, CAM_ALGORITHMS):
 
     dataset_id = os.path.basename(os.path.dirname(base_dir))
     cloud_directory = f"evaluation_results/{dataset_id}/{model_name}/prediction_changes"
-    up_cloud(results_directory, cloud_directory)
+    #up_cloud(results_directory, cloud_directory)
