@@ -150,7 +150,7 @@ import json
 
 
 def load_config():
-    with open("/home/z/Music/devnew_xaiservice/XAIport/task_sheets/task.json", "r") as file:
+    with open("/home/z/Music/devnew_xaiservice/XAIport/task_sheets/testomni.json", "r") as file:
         return json.load(file)
 
 def main():

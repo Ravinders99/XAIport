@@ -7,3 +7,5 @@ temp/
 datasets/
 xairesult
 modelserver/datasets
+*.pyc
+__pycache__/
