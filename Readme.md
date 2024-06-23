@@ -1,12 +1,14 @@
 
-![Architecture Diagram](assets/architecture_diagram.webp)
-
-
 # XAIport
 
 ## Overview
 
 XAIport is designed to deliver interpretable AI model predictions through a microservice architecture, allowing users to understand the underlying decision-making processes of AI models better. The architecture includes a User Interface, Coordination Center, Core Microservices such as Data Processing, AI Model, XAI Method, and Evaluation Services, along with a Data Persistence layer.
+
+
+![Architecture Diagram](assets/architecture_diagram.webp)
+
+
 
 ## Initial Setup
 
