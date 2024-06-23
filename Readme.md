@@ -1,3 +1,7 @@
+
+![Architecture Diagram](assets/architecture_diagram.webp)
+
+
 # XAIport
 
 ## Overview
