@@ -1,8 +1,8 @@
-# XAIport: XAI Service System
+# XAIport
 
 ## Overview
 
-The XAIport is designed to provide an interpretable framework for AI model predictions through a robust microservice architecture. This enables users to gain insights into the decision-making processes of AI models. The system architecture includes several layers such as the User Interface, Coordination Center, Core Microservices including Data Processing, AI Model, XAI Method, and Evaluation Services, along with a Data Persistence layer.
+XAIport is designed to deliver interpretable AI model predictions through a microservice architecture, allowing users to understand the underlying decision-making processes of AI models better. The architecture includes a User Interface, Coordination Center, Core Microservices such as Data Processing, AI Model, XAI Method, and Evaluation Services, along with a Data Persistence layer.
 
 ## Initial Setup
 
@@ -12,7 +12,7 @@ The XAIport is designed to provide an interpretable framework for AI model predi
 - FastAPI
 - httpx
 - uvicorn
-- Any additional dependencies listed in `requirements.txt`
+- Dependencies as listed in `requirements.txt`
 
 ### Installation Guide
 
@@ -32,11 +32,11 @@ The XAIport is designed to provide an interpretable framework for AI model predi
    ```
 
 3. **Clone the Repository**:
-   If applicable, clone the repository to get the latest codebase:
+   Clone the repository to get the latest codebase:
 
    ```bash
-   git clone https://github.com/yourgithubrepo/xai-service.git
-   cd xai-service
+   git clone https://github.com/ZeruiW/XAIport.git
+   cd XAIport
    ```
 
 ### Configuration
@@ -114,10 +114,3 @@ Check if the target server is reachable and ensure that the file paths in the co
 
 Modify the API endpoints directly in the JSON configuration file and restart the service to apply changes.
 
-## Additional Resources
-
-- **API Documentation**: See the detailed API documentation hosted on Swagger at [Swagger API Docs](http://example.com/api-docs).
-
-- **Community Support**: Join our Slack or Discord community for support and discussions.
-
-This README provides a comprehensive guide on how to configure, deploy, and manage the XAI Service. Ensure to keep the documentation up-to-date with system changes and upgrades.
