@@ -142,9 +142,9 @@ class DataProcess:
 
         await asyncio.gather(*tasks)
 
-        # 上传到云端
-        cloud_upload_path = os.path.join("datasets", perturbed_folder_name)
-        up_cloud(perturbed_folder_path, cloud_upload_path)
+        # # 上传到云端
+        # cloud_upload_path = os.path.join("datasets", perturbed_folder_name)
+        # up_cloud(perturbed_folder_path, cloud_upload_path)
 
         return perturbed_folder_path
     

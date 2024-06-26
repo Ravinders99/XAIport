@@ -1,6 +1,8 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel, Field
+from fastapi.responses import FileResponse
 import evaluation
+import os
 
 app = FastAPI()
 
@@ -28,7 +30,6 @@ def run_evaluation(dataset_id: str, model_name: str, perturbation_func: str, sev
         print(f"Error in running evaluation: {e}")
         raise
 
-
 @app.post("/evaluate_cam")
 async def evaluate_cam(request: EvaluationRequest, background_tasks: BackgroundTasks):
     try:
@@ -37,6 +38,25 @@ async def evaluate_cam(request: EvaluationRequest, background_tasks: BackgroundT
     except Exception as e:
         print(f"Error in evaluate_cam endpoint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/results/{dataset_id}/{model_name}/{perturbation_func}/{severity}/{file_type}")
+async def get_results(dataset_id: str, model_name: str, perturbation_func: str, severity: str, file_type: str):
+    if perturbation_func and severity:
+        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}_{perturbation_func}_{severity}/{model_name}/evaluation/prediction_changes"
+    else:
+        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}/{model_name}/evaluation/prediction_changes"
+
+    if file_type == "csv":
+        file_path = os.path.join(results_directory, 'prediction_changes_statistics_top1.csv')
+    elif file_type == "plot":
+        file_path = os.path.join(results_directory, 'violin_plot_top1_prediction_percentage_changes.png')
+    else:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(file_path)
 
 if __name__ == "__main__":
     import uvicorn
