@@ -7,11 +7,18 @@ import pandas as pd
 from io import StringIO, BytesIO
 from PIL import Image
 import requests
-
+    # "perturbation_config": {
+    #   "server_url": "http://0.0.0.0:8001",
+    #   "datasets": {
+    #     "t1204": {
+    #       "perturbation_type": "gaussian_noise",
+    #       "severity": 3
+    #     }
+    #   }
+    # },
 
 default_json = """
-{
-    "perturbation_config": {
+{    "perturbation_config": {
       "server_url": "http://0.0.0.0:8001",
       "datasets": {
         "t1204": {
@@ -155,12 +162,11 @@ def save_and_run_pipeline(config):
     except json.JSONDecodeError:
         return "Invalid JSON configuration"
 
-# Function to fetch and display results
 import json
 import requests
 from io import StringIO, BytesIO
-from PIL import Image
 import pandas as pd
+from PIL import Image
 from fastapi import HTTPException
 
 def fetch_results(config):
@@ -172,6 +178,12 @@ def fetch_results(config):
     perturbation_func = settings.get('perturbation_func', None)
     severity = settings.get('severity', None)
     model_name = settings['model_name']
+
+    # Construct URL based on the presence of perturbation_func and severity
+    if perturbation_func and severity:
+        results_directory = f"{dataset_id}_{perturbation_func}_{severity}/{model_name}/evaluation/prediction_changes"
+    else:
+        results_directory = f"{dataset_id}/{model_name}/evaluation/prediction_changes"
 
     # Fetch CSV results
     csv_url = f"{base_url}/results/{dataset_id}/{model_name}/{perturbation_func}/{severity}/csv"
@@ -675,8 +687,23 @@ def apply_cam(image_path, method_name, model_name):
 
 
 
+# text
+import requests
+from io import BytesIO
+from PIL import Image
 
-
+def fetch_codevul_xai(dataset):
+    url = "http://0.0.0.0:8005/codevul_xai"
+    response = requests.post(url, json={"dataset": dataset})
+    
+    if response.status_code == 200:
+        result = response.json()
+        output_json = result["output_json"]
+        plot_image_path = result["plot_image"]
+        plot_image = Image.open(plot_image_path)
+        return json.dumps(output_json, indent=4), plot_image
+    else:
+        return "Error fetching results", None
 
 
 # Create the main Gradio app with tabs
@@ -696,17 +723,16 @@ with gr.Blocks() as app:
                 inputs=json_input,
                 outputs=output_text
             )
-
+            
             results_button = gr.Button("Fetch Results")
             results_dataframe = gr.DataFrame(label="Results")
             results_plot = gr.Image(label="Results Plot")
-
+            
             results_button.click(
                 fn=lambda config: fetch_results(config),
                 inputs=json_input,
                 outputs=[results_dataframe, results_plot]
             )
-
         
 
         with gr.TabItem("Tabular"):
@@ -774,8 +800,18 @@ with gr.Blocks() as app:
             )
         
         with gr.TabItem("Text"):
-            gr.Markdown("This tab will contain functionalities for text data.")
-        
+            gr.Markdown("This tab will contain functionalities for text data, code vulnerability case study.")
+            
+            dataset_dropdown = gr.Dropdown(choices=["MSR"], label="Select Dataset", value="MSR")
+            fetch_button = gr.Button("Fetch Results")
+            output_json_display = gr.JSON(label="Output JSON")
+            plot_image_display = gr.Image(label="Similarity Plot")
+
+            fetch_button.click(
+                fn=fetch_codevul_xai,
+                inputs=dataset_dropdown,
+                outputs=[output_json_display, plot_image_display]
+            )
       
         with gr.TabItem("Vision"):
             gr.Markdown("## Upload an Image for Classification and GradCAM Explanation")
@@ -809,4 +845,4 @@ with gr.Blocks() as app:
             gr.Markdown("This tab will contain functionalities for stream data.")
 
 # Launch Gradio app
-app.launch()
+app.launch(share=True)

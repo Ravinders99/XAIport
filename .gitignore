@@ -9,3 +9,9 @@ xairesult
 modelserver/datasets
 *.pyc
 __pycache__/
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+xaiserver/e2e-process

@@ -42,9 +42,9 @@ async def evaluate_cam(request: EvaluationRequest, background_tasks: BackgroundT
 @app.get("/results/{dataset_id}/{model_name}/{perturbation_func}/{severity}/{file_type}")
 async def get_results(dataset_id: str, model_name: str, perturbation_func: str, severity: str, file_type: str):
     if perturbation_func and severity:
-        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}_{perturbation_func}_{severity}/{model_name}/evaluation/prediction_changes"
+        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/evaluation_server/evaluation_results/{model_name}/{perturbation_func}_{severity}/prediction_changes"
     else:
-        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/xairesult/{dataset_id}/{model_name}/evaluation/prediction_changes"
+        results_directory = f"/home/z/Music/devnew_xaiservice/XAIport/evaluation_server/evaluation_results/{model_name}/{perturbation_func}_{severity}/prediction_changes"
 
     if file_type == "csv":
         file_path = os.path.join(results_directory, 'prediction_changes_statistics_top1.csv')

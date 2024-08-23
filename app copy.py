@@ -156,13 +156,6 @@ def save_and_run_pipeline(config):
         return "Invalid JSON configuration"
 
 # Function to fetch and display results
-import json
-import requests
-from io import StringIO, BytesIO
-from PIL import Image
-import pandas as pd
-from fastapi import HTTPException
-
 def fetch_results(config):
     config_dict = json.loads(config)
     evaluation_config = config_dict['evaluation_config']
@@ -188,7 +181,6 @@ def fetch_results(config):
     plot_image = Image.open(BytesIO(plot_response.content))
 
     return csv_data, plot_image
-
 
 #Tabular data
 
@@ -454,7 +446,6 @@ def evaluate_global_shap_values(dataset_name, model_type, sample_size):
 import gradio as gr
 import json
 import asyncio
-from fastapi import HTTPException
 import httpx
 import pandas as pd
 from io import StringIO, BytesIO
@@ -487,82 +478,12 @@ label_to_index_description = {v[0]: (k, v[1]) for k, v in imagenet_class_index.i
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-def ensure_rgb(img):
-    if img.mode != 'RGB':
-        return img.convert('RGB')
-    return img
-
-# Transformations and reshape transform functions for each model
-def get_transform(model_name):
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-
-    if model_name == "nvidia/mit-b0":
-        transform = transforms.Compose([
-            transforms.Resize((480, 640)),  # Adjust size for Segformer
-            transforms.ToTensor(),
-            normalize
-        ])
-        def reshape_transform(tensor, width, height):
-            result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
-            result = result.transpose(2, 3).transpose(1, 2)
-            return result
-
-    elif model_name == "microsoft/swin-large-patch4-window12-384-in22k":
-        transform = transforms.Compose([
-            transforms.Resize((384, 384)),  # Adjust size for Swin
-            transforms.ToTensor(),
-            normalize
-        ])
-        def reshape_transform(tensor, width, height):
-            result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
-            result = result.transpose(2, 3).transpose(1, 2)
-            return result
-
-    elif model_name == "microsoft/cvt-13":
-        transform = transforms.Compose([
-            transforms.Resize((480, 640)),  # Adjust size for CVT
-            transforms.ToTensor(),
-            normalize
-        ])
-        def reshape_transform(tensor, model, width, height):
-            tensor = tensor[:, 1:, :]
-            tensor = tensor.reshape(tensor.size(0), height, width, tensor.size(-1))
-            return tensor.transpose(2, 3).transpose(1, 2)
-
-    elif model_name == "google/vit-large-patch32-384":
-        transform = transforms.Compose([
-            transforms.Resize((384, 384)),  # Adjust size for ViT
-            transforms.ToTensor(),
-            normalize
-        ])
-        def reshape_transform(x):
-            activations = x[:, 1:, :]
-            activations = activations.view(activations.shape[0], 12, 12, activations.shape[2])
-            activations = activations.transpose(2, 3).transpose(1, 2)
-            return activations
-
-    elif model_name == "facebook/convnext-tiny-224":
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),  # Adjust size for ConvNext
-            transforms.ToTensor(),
-            normalize
-        ])
-        def reshape_transform(tensor, model):
-            batch, features, height, width = tensor.shape
-            tensor = tensor.transpose(1, 2).transpose(2, 3)
-            norm = model.convnext.layernorm(tensor)
-            return norm.transpose(2, 3).transpose(1, 2)
-
-    else:  # Default transformation for resnet50
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
-            transforms.ToTensor(),          # Convert the image to a PyTorch tensor
-            normalize
-        ])
-        reshape_transform = None
-
-    return transform, reshape_transform
-
+# Transformations for the input image
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
+    transforms.ToTensor(),          # Convert the image to a PyTorch tensor
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
 
 # Helper function to apply Grad-CAM
 def run_grad_cam_on_image(model, target_layer, targets_for_gradcam, input_tensor, input_image, reshape_transform, method):
@@ -581,37 +502,40 @@ def get_class_label(idx):
 # Function to predict the class of an image
 def predict(image_path, model_name):
     img = Image.open(image_path).convert('RGB')
-    transform, _ = get_transform(model_name)
     img_tensor = transform(img).unsqueeze(0).to(device)
 
     if model_name == "resnet50":
         model = resnet50(pretrained=True).to(device)
-        model.eval()
-        with torch.no_grad():
-            output = model(img_tensor)
-            _, predicted_idx = torch.max(output, 1)
-    else:
-        model = {
-            "nvidia/mit-b0": SegformerForImageClassification.from_pretrained("nvidia/mit-b0").to(device),
-            "microsoft/swin-large-patch4-window12-384-in22k": SwinForImageClassification.from_pretrained(model_name).to(device),
-            "microsoft/cvt-13": CvtForImageClassification.from_pretrained("microsoft/cvt-13").to(device),
-            "google/vit-large-patch32-384": ViTForImageClassification.from_pretrained("google/vit-large-patch32-384").to(device),
-            "facebook/convnext-tiny-224": ConvNextForImageClassification.from_pretrained("facebook/convnext-tiny-224").to(device)
-        }[model_name]
-        
-        model.eval()
-        with torch.no_grad():
-            logits = model(img_tensor).logits
-            _, predicted_idx = torch.max(logits, 1)
-    
-    predicted_label = get_class_label(predicted_idx.item())
-    return predicted_label
+    elif model_name == "nvidia/mit-b0":
+        model = SegformerForImageClassification.from_pretrained("nvidia/mit-b0").to(device)
+    elif model_name == "microsoft/swin-large-patch4-window12-384-in22k":
+        model = SwinForImageClassification.from_pretrained(model_name).to(device)
+    elif model_name == "microsoft/cvt-13":
+        model = CvtForImageClassification.from_pretrained("microsoft/cvt-13").to(device)
+    elif model_name == "google/vit-large-patch32-384":
+        model = ViTForImageClassification.from_pretrained("google/vit-large-patch32-384").to(device)
+    elif model_name == "facebook/convnext-tiny-224":
+        model = ConvNextForImageClassification.from_pretrained("facebook/convnext-tiny-224").to(device)
+    # Add more models here if necessary
 
+    model.eval()
+
+    with torch.no_grad():
+        output = model(img_tensor)
+    
+    if model_name == "resnet50":
+        _, predicted_idx = torch.max(output, 1)
+        predicted_label = get_class_label(predicted_idx.item())
+    else:
+        logits = output.logits
+        _, predicted_idx = torch.max(logits, 1)
+        predicted_label = get_class_label(predicted_idx.item())
+    
+    return predicted_label
 
 # Function to apply CAM
 def apply_cam(image_path, method_name, model_name):
     img = Image.open(image_path).convert('RGB')
-    transform, reshape_transform = get_transform(model_name)
     img_tensor = transform(img).unsqueeze(0).to(device)
 
     CAM_ALGORITHMS = {
@@ -626,21 +550,27 @@ def apply_cam(image_path, method_name, model_name):
     if model_name == "resnet50":
         model = resnet50(pretrained=True).to(device)
         target_layer = model.layer4[-1].conv3
+        reshape_transform = None
     elif model_name == "nvidia/mit-b0":
         model = SegformerForImageClassification.from_pretrained(model_name).to(device)
         target_layer = model.segformer.encoder.layer_norm[-1]
+        reshape_transform = partial(segformer_reshape_transform_huggingface, width=img_tensor.shape[2]//32, height=img_tensor.shape[1]//32)
     elif model_name == "microsoft/swin-large-patch4-window12-384-in22k":
         model = SwinForImageClassification.from_pretrained(model_name).to(device)
         target_layer = model.swin.layernorm
+        reshape_transform = partial(swinT_reshape_transform_huggingface, width=img_tensor.shape[2]//32, height=img_tensor.shape[1]//32)
     elif model_name == "microsoft/cvt-13":
         model = CvtForImageClassification.from_pretrained(model_name).to(device)
         target_layer = model.cvt.encoder.stages[-1].layers[-2]
+        reshape_transform = partial(reshape_transform_cvt_huggingface, model=model, width=img_tensor.shape[2]//16, height=img_tensor.shape[1]//16)
     elif model_name == "google/vit-large-patch32-384":
         model = ViTForImageClassification.from_pretrained("google/vit-large-patch32-384").to(device)
         target_layer = model.vit.encoder.layer[-2].output
+        reshape_transform = reshape_transform_vit_huggingface
     elif model_name == "facebook/convnext-tiny-224":
         model = ConvNextForImageClassification.from_pretrained("facebook/convnext-tiny-224").to(device)
         target_layer = model.convnext.encoder.stages[-1].layers[-1]
+        reshape_transform = partial(reshape_transform_convnext_huggingface, model=model)
     # Add more models here if necessary
 
     model.eval()
@@ -655,7 +585,7 @@ def apply_cam(image_path, method_name, model_name):
                 input_tensor=img_tensor,
                 input_image=img,
                 method=method,
-                reshape_transform=reshape_transform if reshape_transform else None
+                reshape_transform=reshape_transform
             )
             results.append(visualization)
         combined_result = np.hstack(results)
@@ -669,12 +599,9 @@ def apply_cam(image_path, method_name, model_name):
             input_tensor=img_tensor,
             input_image=img,
             method=method,
-            reshape_transform=reshape_transform if reshape_transform else None
+            reshape_transform=reshape_transform
         )
         return result
-
-
-
 
 
 
@@ -696,17 +623,16 @@ with gr.Blocks() as app:
                 inputs=json_input,
                 outputs=output_text
             )
-
+            
             results_button = gr.Button("Fetch Results")
             results_dataframe = gr.DataFrame(label="Results")
             results_plot = gr.Image(label="Results Plot")
-
+            
             results_button.click(
                 fn=lambda config: fetch_results(config),
                 inputs=json_input,
                 outputs=[results_dataframe, results_plot]
             )
-
         
 
         with gr.TabItem("Tabular"):
