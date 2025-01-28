@@ -2,17 +2,20 @@ import os
 import shutil
 from PIL import Image
 import numpy as np
-import random
+import random, av
+import pandas as pd
 from PIL import Image, ImageFilter
 import aiofiles
 import asyncio
 from azure.storage.blob.aio import BlobServiceClient
 
+
 class DataProcess:
     def __init__(self, base_storage_address):
         self.datasets = {}
         self.dataset_properties = {}
-        self.base_storage_address = base_storage_address  # New class attribute
+        self.base_storage_address = base_storage_address 
+        self.metadata = {} # New class attribute
 
 
     async def upload_dataset(self, data_files, dataset_id, data_type):
@@ -169,3 +172,32 @@ class DataProcess:
         perturbed_dataset_path = os.path.join(dataset_dir, '..', perturbed_folder_name)
         
         return dataset_dir, perturbed_dataset_path
+    
+# kinetcs dataset process
+    def load_metadata(self, labels_csv, video_list_txt):
+        self.metadata['labels'] = pd.read_csv(labels_csv)
+        self.metadata['video_map'] = {}
+        with open(video_list_txt, "r") as f:
+            for line in f:
+                video_name, label = line.strip().split()
+                self.metadata['video_map'][video_name] = label
+
+    def get_label(self, video_name):
+        if 'video_map' not in self.metadata:
+            raise ValueError("Metadata not loaded. Call load_metadata() first.")
+        return self.metadata['video_map'].get(video_name, "Unknown")
+
+    def process_kinetics_video(self, video_path, num_frames=8):
+        video_name = os.path.splitext(os.path.basename(video_path))[0]
+        output_dir = os.path.join(self.base_storage_address, "videos", video_name)
+        os.makedirs(output_dir, exist_ok=True)
+
+        container = av.open(video_path)
+        frames = [frame.to_image() for frame in container.decode(video=0)]
+        sampled_frames = [frames[i] for i in np.linspace(0, len(frames) - 1, num_frames, dtype=int)]
+
+        for idx, frame in enumerate(sampled_frames):
+            frame.save(os.path.join(output_dir, f"frame_{idx + 1}.jpg"))
+
+        label = self.get_label(video_name)
+        return {"video_name": video_name, "label": label, "frame_dir": output_dir}
