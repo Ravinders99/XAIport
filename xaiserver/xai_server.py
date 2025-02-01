@@ -5,7 +5,7 @@ import cam_resnet
 from fastapi import FastAPI, BackgroundTasks, HTTPException,Request
 import aiohttp
 import os
-from modelserver.attention_extractor import AttentionExtractor  
+from attention_extractor import AttentionExtractor  
 import torch 
 app = FastAPI()
 staa_model = AttentionExtractor("facebook/timesformer-base-finetuned-k400", device="cpu")
