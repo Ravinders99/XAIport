@@ -46,48 +46,71 @@ extractor = AttentionExtractor(
     device="cuda" if torch.cuda.is_available() else "cpu",
 )
 
-# Directories
-TEMP_DIR = "temp"
+
 OUTPUT_DIR = "video_results"
-os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-@app.post("/video-explain/")
-async def video_explain(video: UploadFile = File(...)):
-    """
-    Endpoint to process video and extract attention using the Timesformer model.
-    """
-    try:
-        # Save uploaded video to a temporary file
-        video_path = os.path.join(TEMP_DIR, video.filename)
-        with open(video_path, "wb") as f:
-            f.write(await video.read())
+@app.post("/facebook/timesformer-base-finetuned-k400/{dataset_id}")
+async def video_explain(dataset_id: str):
 
-        # Process video with the AttentionExtractor
-        spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
-        prediction_idx = torch.argmax(logits, dim=1).item()
-        prediction = extractor.model.config.id2label[prediction_idx]
+# async def video_explain(video: UploadFile = File(...)):
+    # try:
+    #     # Save uploaded video to a temporary file
+    #     video_path = os.path.join(TEMP_DIR, video.filename)
+    #     with open(video_path, "wb") as f:
+    #         f.write(await video.read())
+    #     spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
+    #     prediction_idx = torch.argmax(logits, dim=1).item()
+    #     prediction = extractor.model.config.id2label[prediction_idx]
 
-        # Save visualization results
-        save_path = os.path.join(OUTPUT_DIR, os.path.splitext(video.filename)[0])
-        os.makedirs(save_path, exist_ok=True)
-        extractor.visualize_attention(
-            spatial_attention, temporal_attention, frames, save_path, prediction, "Unknown"
-        )
+    #     # Save visualization results
+    #     save_path = os.path.join(OUTPUT_DIR, os.path.splitext(video.filename)[0])
+    #     os.makedirs(save_path, exist_ok=True)
+    #     extractor.visualize_attention(
+    #         spatial_attention, temporal_attention, frames, save_path, prediction, "Unknown"
+    #     )
+    #     os.remove(video_path)
 
-        # Cleanup temporary video
-        os.remove(video_path)
+    #     return {
+    #         "message": "Video processed successfully.",
+    #         "prediction": prediction,
+    #         "results_dir": save_path,
+    #     }
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
 
-        return {
-            "message": "Video processed successfully.",
-            "prediction": prediction,
-            "results_dir": save_path,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
+    video_dir = "dataprocess/videos"
+    video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4")]
 
+    results = []
+    for video_file in video_files:
+        video_path = os.path.join(video_dir, video_file)
+        try:
+             # Extract attention and logits
+            spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
+            prediction_idx = torch.argmax(logits, dim=1).item()
+            prediction = extractor.model.config.id2label[prediction_idx]
 
+            # Create a unique directory for each video’s result
+            video_result_dir = os.path.join(OUTPUT_DIR, os.path.splitext(video_file)[0])
+            os.makedirs(video_result_dir, exist_ok=True)
+
+            # Save visualizations
+            extractor.visualize_attention(
+                spatial_attention, temporal_attention, frames, video_result_dir, prediction, "Unknown"
+            )
+            
+
+            results.append({
+                "video_file": video_file,
+                "prediction": prediction,
+                "results_dir": video_result_dir 
+            })
+        except Exception as e:
+            results.append({"video_file": video_file, "error": str(e)})
+
+    return {"results": results}
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8002)

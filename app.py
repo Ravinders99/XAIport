@@ -37,7 +37,7 @@ default_json = """
           "model_name": "resnet",
           "dataset_id": "t1204_gaussian_noise_3",
           "algorithms": ["GradCAM", "HiResCAM", "GradCAMPlusPlus", "XGradCAM", "LayerCAM"]
-        }
+        },
       }
     },
     "evaluation_config": {

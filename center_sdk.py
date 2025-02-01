@@ -119,10 +119,10 @@ async def run_pipeline_from_config(config):
     # 定义步骤处理函数的映射
     step_process_functions = {
         'upload_config': process_upload_config,
-        'perturbation_config': process_perturbation_config,
+        # 'perturbation_config': process_perturbation_config,
         'model_config': process_model_config,
         'xai_config': process_xai_config,
-        'evaluation_config': process_evaluation_config,
+        # 'evaluation_config': process_evaluation_config,
     }
 
     # 从config动态获取要执行的步骤列表

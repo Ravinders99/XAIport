@@ -109,41 +109,6 @@ async def apply_perturbation(background_tasks: BackgroundTasks, dataset_id: str,
 
     return {"message": "Perturbation process started."}
 
-
-import aiohttp
-import logging
-
-
-async def async_http_post(url, json_data=None, files=None):
-    """
-    Make asynchronous POST requests to a given URL with JSON data or files.
-    """
-    async with aiohttp.ClientSession() as session:
-        try:
-            if json_data:
-                response = await session.post(url, json=json_data)
-            elif files:
-                response = await session.post(url, data=files)
-            else:
-                response = await session.post(url)
-
-            # Handle redirects
-            if response.status == 307:
-                redirect_url = response.headers.get('Location')
-                if redirect_url:
-                    logging.info(f"Redirecting to {redirect_url}")
-                    return await async_http_post(redirect_url, json_data, files)
-
-            if response.status != 200:
-                logging.error(f"Error in POST request to {url}: {response.status} - {await response.text()}")
-                raise HTTPException(status_code=response.status, detail=await response.text())
-
-            return await response.json()
-
-        except Exception as e:
-            logging.error(f"Exception during HTTP request: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
-
 # Load Kinetics-400 metadata
 @app.post("/process-kinetics-dataset")
 async def process_kinetics_dataset(data: dict):
@@ -164,13 +129,11 @@ async def process_kinetics_dataset(data: dict):
                 # Process the video using metadata loaded in DataProcess
                 result = data_processor.process_kinetics_video(video_path, num_frames=num_frames)
                 results.append(result)
-                # **Trigger Model Processing**
-                model_url = "http://127.0.0.1:8002/video-explain/"
-                payload = {"video_path": video_path, "num_frames": num_frames}
-                await async_http_post(model_url, json_data=payload)
+
         return {"message": "Kinetics-400 dataset processed successfully", "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)

@@ -61,7 +61,7 @@ async def run_xai(request: XAIRequest, background_tasks: BackgroundTasks):
         background_tasks.add_task(run_xai_process, request.dataset_id, request.algorithms)
         return {"message": "XAI processing for dataset has started successfully."}
     except Exception as e:
-        logging.error(f"Error in run_xai endpoint: {e}")
+        logging.error(f"Error in run_xai endpoint: {e}") 
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -88,6 +88,7 @@ async def staa_video_explain(request: VideoExplainRequest):
     except Exception as e:
         logging.error(f"Error in staa_video_explain: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8003)
