@@ -1,0 +1,67 @@
+{
+  "upload_config": {
+    "server_url": "http://0.0.0.0:8001",
+    "datasets": {
+      "kinetics_400": {
+        "local_video_dir": "dataprocess/videos"
+      }
+    }
+  },
+    "perturbation_config": {
+      "server_url": "http://0.0.0.0:8001",
+      "datasets": {
+        "t1204": {
+          "perturbation_type": "gaussian_noise",
+          "severity": 3
+        }
+      }
+    },
+    "model_config": {
+      "base_url": "http://0.0.0.0:8002",
+      "models": {
+        "t1204": {
+          "model_name": "resnet",
+          "perturbation_type": "gaussian_noise",
+          "severity": 3
+        },
+        "kinetics_video": {
+        "model_name": "facebook/timesformer-base-finetuned-k400",
+        "video_path": "dataprocess/videos/",
+        "num_frames": 8
+      
+      }
+      }
+    },
+    "xai_config": {
+      "base_url": "http://127.0.0.1:8003",
+      "datasets": {
+        "t1204": {
+          "model_name": "resnet",
+          "dataset_id": "t1204_gaussian_noise_3",
+          "algorithms": ["GradCAM", "HiResCAM", "GradCAMPlusPlus", "XGradCAM", "LayerCAM","STAA"] 
+        },
+        "datasets": {
+      "kinetics_video": {
+        "model_name": "facebook/timesformer-base-finetuned-k400",
+        "video_path": "dataprocess/videos/",
+        "algorithms": ["STAA"]
+      }
+  
+      }
+      }
+    },
+    "evaluation_config": {
+      "base_url": "http://0.0.0.0:8004",
+      "datasets": {
+        "t1204": {
+          "evaluation_metric": "evaluate_cam",
+          "model_name": "resnet50",
+          "perturbation_func": "gaussian_noise",
+          "severity": "3",
+          "xai_method": "cam_xai",
+          "algorithms": ["GradCAM", "HiResCAM", "GradCAMPlusPlus", "XGradCAM", "LayerCAM"]
+        }
+      }
+    }
+  }
+  
