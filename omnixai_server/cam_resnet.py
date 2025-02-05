@@ -17,11 +17,14 @@ import numpy as np
 import cv2
 import torch
 from tqdm import tqdm
+
+
 # from functionaltool.cloudstorage import up_cloud, down_cloud
 
 # 在 cam_resnet 模块中定义
 CAM_ALGORITHMS_MAPPING = {
     "GradCAM": GradCAM,
+    
 }
 
 
@@ -68,6 +71,7 @@ transform = transforms.Compose([
 #CAM_ALGORITHMS = [GradCAM, HiResCAM, GradCAMPlusPlus, XGradCAM, LayerCAM]
 
 def xai_run(dataset_dirs, cam_algorithms):
+    
     for dataset_path in dataset_dirs:
         dataset = load_images_from_directory(dataset_path)
         dataset_name = os.path.basename(dataset_path)

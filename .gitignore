@@ -14,4 +14,4 @@ __pycache__/
 *.jpg
 *.jpeg
 *.gif
-xaiserver/e2e-process
+xaiserver/e2e-processmyenv/

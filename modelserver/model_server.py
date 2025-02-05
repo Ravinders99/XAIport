@@ -47,6 +47,8 @@ extractor = AttentionExtractor(
 )
 
 
+ORIGINAL_VIDEO_DIR = "dataprocess/videos"
+ADVERSARIAL_VIDEO_DIR = "dataprocess/FGSM"
 OUTPUT_DIR = "video_results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -54,33 +56,10 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 @app.post("/facebook/timesformer-base-finetuned-k400/{dataset_id}")
 async def video_explain(dataset_id: str):
 
-# async def video_explain(video: UploadFile = File(...)):
-    # try:
-    #     # Save uploaded video to a temporary file
-    #     video_path = os.path.join(TEMP_DIR, video.filename)
-    #     with open(video_path, "wb") as f:
-    #         f.write(await video.read())
-    #     spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
-    #     prediction_idx = torch.argmax(logits, dim=1).item()
-    #     prediction = extractor.model.config.id2label[prediction_idx]
+    video_dir = "dataprocess/FGSM"
+    # video_dir = os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id) if os.path.exists(
+    #     os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id)) else ORIGINAL_VIDEO_DIR
 
-    #     # Save visualization results
-    #     save_path = os.path.join(OUTPUT_DIR, os.path.splitext(video.filename)[0])
-    #     os.makedirs(save_path, exist_ok=True)
-    #     extractor.visualize_attention(
-    #         spatial_attention, temporal_attention, frames, save_path, prediction, "Unknown"
-    #     )
-    #     os.remove(video_path)
-
-    #     return {
-    #         "message": "Video processed successfully.",
-    #         "prediction": prediction,
-    #         "results_dir": save_path,
-    #     }
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
-
-    video_dir = "dataprocess/videos"
     video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4")]
 
     results = []

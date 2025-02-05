@@ -11,9 +11,10 @@
   "server_url": "http://0.0.0.0:8001",
   "datasets": {
     "kinetics_400": {
-      "perturbation_type": "none",
-      "severity": 0
-    }
+      "perturbation_type": "adversarial_attack",
+        "severity": 1,
+        "video_directory": "dataprocess/videos"  
+      }
   }
 },
 
@@ -22,7 +23,7 @@
     "models": {
       "kinetics_video": {
         "model_name": "facebook/timesformer-base-finetuned-k400",
-        "video_path": "dataprocess/videos",
+        "video_path": "dataprocess/FGSM",
         "num_frames": 8
       }
     }

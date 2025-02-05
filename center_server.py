@@ -88,11 +88,24 @@ async def process_perturbation_config(perturbation_config):
 # 处理模型配置
 async def process_model_config(model_config):
     base_url = model_config['base_url']
+    # for model, settings in model_config['models'].items():
+    #     # full_url = f"{base_url}/{settings['model_name']}/{model}/{settings['perturbation_type']}/{settings['severity']}"
+    #     full_url = f"{base_url}/{settings['model_name']}/{model}"
+    #     print(f"Calling model server: {full_url}")
+    #     await async_http_post(full_url)
     for model, settings in model_config['models'].items():
-        # full_url = f"{base_url}/{settings['model_name']}/{model}/{settings['perturbation_type']}/{settings['severity']}"
+        video_input_dir = settings.get('video_input_dir', 'datasets/FGSM')  # Set FGSM as default
+
         full_url = f"{base_url}/{settings['model_name']}/{model}"
-        print(f"Calling model server: {full_url}")
-        await async_http_post(full_url)
+        
+        data = {
+            "video_directory": video_input_dir,
+            "num_frames": settings.get('num_frames', 8)
+        }
+        
+        print(f"Sending adversarial videos to model server: {video_input_dir}")
+        await async_http_post(full_url, json_data=data)
+
 
 
 # 处理 XAI 配置
@@ -154,7 +167,7 @@ async def run_pipeline_from_config(config):
     await process_pipeline_step(config, 'perturbation_config', process_perturbation_config)
     await process_pipeline_step(config, 'model_config', process_model_config)
     await process_pipeline_step(config, 'xai_config', process_xai_config)
-    # await process_pipeline_step(config, 'evaluation_config', process_evaluation_config)
+    await process_pipeline_step(config, 'evaluation_config', process_evaluation_config)
 import traceback  
 # API 端点来触发 Pipeline
 @app.post("/run_pipeline/")
