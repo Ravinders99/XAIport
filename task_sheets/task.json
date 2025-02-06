@@ -23,7 +23,8 @@
     "models": {
       "kinetics_video": {
         "model_name": "facebook/timesformer-base-finetuned-k400",
-        "video_path": "dataprocess/FGSM",
+        "original_video_dir": "dataprocess/videos",
+      "adversarial_video_dir": "dataprocess/FGSM",
         "num_frames": 8
       }
     }

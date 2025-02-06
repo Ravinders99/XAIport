@@ -1,5 +1,4 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException ,File
-
 from pydantic import BaseModel
 import Model_ResNet
 import os
@@ -53,41 +52,95 @@ OUTPUT_DIR = "video_results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
+# @app.post("/facebook/timesformer-base-finetuned-k400/{dataset_id}")
+# async def video_explain(dataset_id: str):
+
+#     video_dir = "dataprocess/FGSM"
+#     # video_dir = os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id) if os.path.exists(
+#     #     os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id)) else ORIGINAL_VIDEO_DIR
+
+#     video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4")]
+
+#     results = []
+#     for video_file in video_files:
+#         video_path = os.path.join(video_dir, video_file)
+#         try:
+#              # Extract attention and logits
+#             spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
+#             prediction_idx = torch.argmax(logits, dim=1).item()
+#             prediction = extractor.model.config.id2label[prediction_idx]
+
+#             # Create a unique directory for each video’s result
+#             video_result_dir = os.path.join(OUTPUT_DIR, os.path.splitext(video_file)[0])
+#             os.makedirs(video_result_dir, exist_ok=True)
+
+#             # Save visualizations
+#             extractor.visualize_attention(
+#                 spatial_attention, temporal_attention, frames, video_result_dir, prediction, "Unknown"
+#             )
+            
+
+#             results.append({
+#                 "video_file": video_file,
+#                 "prediction": prediction,
+#                 "results_dir": video_result_dir 
+#             })
+#         except Exception as e:
+#             results.append({"video_file": video_file, "error": str(e)})
+
+#     return {"results": results}
+
+CLEAN_SUBDIR = "clean"
+FGSM_SUBDIR = "adversarial"
+os.makedirs(os.path.join(OUTPUT_DIR, "original"), exist_ok=True)
+os.makedirs(os.path.join(OUTPUT_DIR, "adversarial"), exist_ok=True)
+
 @app.post("/facebook/timesformer-base-finetuned-k400/{dataset_id}")
 async def video_explain(dataset_id: str):
 
-    video_dir = "dataprocess/FGSM"
-    # video_dir = os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id) if os.path.exists(
-    #     os.path.join(ADVERSARIAL_VIDEO_DIR, dataset_id)) else ORIGINAL_VIDEO_DIR
-
-    video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4")]
+    # Process clean videos
+    clean_video_dir = "dataprocess/videos"
+    fgsm_video_dir = "dataprocess/FGSM"
 
     results = []
-    for video_file in video_files:
-        video_path = os.path.join(video_dir, video_file)
-        try:
-             # Extract attention and logits
-            spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
-            prediction_idx = torch.argmax(logits, dim=1).item()
-            prediction = extractor.model.config.id2label[prediction_idx]
 
-            # Create a unique directory for each video’s result
-            video_result_dir = os.path.join(OUTPUT_DIR, os.path.splitext(video_file)[0])
-            os.makedirs(video_result_dir, exist_ok=True)
+    # Process both clean and FGSM videos
+    for video_type, video_dir, result_dir in [
+        ("clean", clean_video_dir, CLEAN_SUBDIR),
+        ("adversarial", fgsm_video_dir, FGSM_SUBDIR)
+    ]:
+        video_files = [f for f in os.listdir(video_dir) if f.endswith(".mp4")]
 
-            # Save visualizations
-            extractor.visualize_attention(
-                spatial_attention, temporal_attention, frames, video_result_dir, prediction, "Unknown"
-            )
-            
+        for video_file in video_files:
+            video_path = os.path.join(video_dir, video_file)
+            try:
+                # Extract attention and logits
+                spatial_attention, temporal_attention, frames, logits = extractor.extract_attention(video_path)
+                prediction_idx = torch.argmax(logits, dim=1).item()
+                prediction = extractor.model.config.id2label[prediction_idx]
 
-            results.append({
-                "video_file": video_file,
-                "prediction": prediction,
-                "results_dir": video_result_dir 
-            })
-        except Exception as e:
-            results.append({"video_file": video_file, "error": str(e)})
+                # Create a unique directory for storing the results of this video type
+                video_result_dir = os.path.join(OUTPUT_DIR, result_dir, os.path.splitext(video_file)[0])
+                os.makedirs(video_result_dir, exist_ok=True)
+
+                # Save visualizations
+                extractor.visualize_attention(
+                    spatial_attention, temporal_attention, frames, video_result_dir, prediction, video_type
+                )
+
+                results.append({
+                    "video_file": video_file,
+                    "video_type": video_type,
+                    "prediction": prediction,
+                    "results_dir": video_result_dir
+                })
+
+            except Exception as e:
+                results.append({
+                    "video_file": video_file,
+                    "video_type": video_type,
+                    "error": str(e)
+                })
 
     return {"results": results}
 if __name__ == "__main__":
