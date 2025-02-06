@@ -93,19 +93,39 @@ async def process_model_config(model_config):
     #     full_url = f"{base_url}/{settings['model_name']}/{model}"
     #     print(f"Calling model server: {full_url}")
     #     await async_http_post(full_url)
-    for model, settings in model_config['models'].items():
-        video_input_dir = settings.get('video_input_dir', 'datasets/FGSM')  # Set FGSM as default
+    # for model, settings in model_config['models'].items():
+    #     video_input_dir = settings.get('video_input_dir', 'datasets/FGSM')  # Set FGSM as default
 
-        full_url = f"{base_url}/{settings['model_name']}/{model}"
+    #     full_url = f"{base_url}/{settings['model_name']}/{model}"
         
-        data = {
-            "video_directory": video_input_dir,
+    #     data = {
+    #         "video_directory": video_input_dir,
+    #         "num_frames": settings.get('num_frames', 8)
+    #     }
+        
+    #     print(f"Sending adversarial videos to model server: {video_input_dir}")
+    #     await async_http_post(full_url, json_data=data)
+    for model, settings in model_config['models'].items():
+        original_video_dir = settings.get('original_video_dir', 'dataprocess/videos')  # Default for original
+        adversarial_video_dir = settings.get('adversarial_video_dir', 'dataprocess/FGSM')  # Default for adversarial
+        
+        # Process original videos
+        full_url_original = f"{base_url}/{settings['model_name']}/{model}"
+        data_original = {
+            "video_directory": original_video_dir,
             "num_frames": settings.get('num_frames', 8)
         }
+        print(f"Sending original videos to model server: {original_video_dir}")
+        await async_http_post(full_url_original, json_data=data_original)
         
-        print(f"Sending adversarial videos to model server: {video_input_dir}")
-        await async_http_post(full_url, json_data=data)
-
+        # Process adversarial videos
+        full_url_adversarial = f"{base_url}/{settings['model_name']}/{model}"
+        data_adversarial = {
+            "video_directory": adversarial_video_dir,
+            "num_frames": settings.get('num_frames', 8)
+        }
+        print(f"Sending adversarial videos to model server: {adversarial_video_dir}")
+        await async_http_post(full_url_adversarial, json_data=data_adversarial)
 
 
 # 处理 XAI 配置
