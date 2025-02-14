@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from transformers import TimesformerForVideoClassification, AutoImageProcessor
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
-def load_video(video_path, num_frames=8):
+def load_video(video_path, num_frames=32):
     frames = []
     container = av.open(video_path)
     
@@ -20,6 +20,7 @@ def load_video(video_path, num_frames=8):
         frames.append(frames[-1])
     
     return np.stack(frames)
+ 
 
 def load_labels(label_file):
     labels = {}
@@ -176,8 +177,8 @@ def evaluate_and_generate_adversarial(config):
 if __name__ == "__main__":
     config = {
         'model_name': 'facebook/timesformer-base-finetuned-k400',
-        'video_directory': 'dataproces/FGSM', # input
-        'label_file': 'kinetics400_val_list_videos.txt',# config['label_file']
+        'video_directory': 'dataprocess/test_video', # input
+        'label_file': 'dataprocess/kinetics400_val_list_videos.txt',# config['label_file']
         'epsilon': 0.1  
     }
     

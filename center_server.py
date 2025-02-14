@@ -12,6 +12,7 @@ import os
 import asyncio
 import logging
 
+import aiohttp
 
 app = FastAPI(title="Coordination Center")
 
@@ -105,29 +106,55 @@ async def process_model_config(model_config):
         
     #     print(f"Sending adversarial videos to model server: {video_input_dir}")
     #     await async_http_post(full_url, json_data=data)
+
+
+    # for model, settings in model_config['models'].items():
+    #     original_video_dir = settings.get('original_video_dir', 'dataprocess/videos')  
+    #     adversarial_video_dir = settings.get('adversarial_video_dir', 'dataprocess/FGSM')  
+        
+    #     # Process original videos
+    #     full_url_original = f"{base_url}/{settings['model_name']}/{model}"
+    #     data_original = {
+    #         "video_directory": original_video_dir,
+    #         "num_frames": settings.get('num_frames', 8)
+    #     }
+    #     print(f"Sending original videos to model server: {original_video_dir}")
+    #     await async_http_post(full_url_original, json_data=data_original)
+        
+    #     # Process adversarial videos
+    #     full_url_adversarial = f"{base_url}/{settings['model_name']}/{model}"
+    #     data_adversarial = {
+    #         "video_directory": adversarial_video_dir,
+    #         "num_frames": settings.get('num_frames', 8)
+    #     }
+    #     print(f"Sending adversarial videos to model server: {adversarial_video_dir}")
+    #     await async_http_post(full_url_adversarial, json_data=data_adversarial)
+
     for model, settings in model_config['models'].items():
-        original_video_dir = settings.get('original_video_dir', 'dataprocess/videos')  # Default for original
-        adversarial_video_dir = settings.get('adversarial_video_dir', 'dataprocess/FGSM')  # Default for adversarial
-        
-        # Process original videos
-        full_url_original = f"{base_url}/{settings['model_name']}/{model}"
-        data_original = {
-            "video_directory": original_video_dir,
-            "num_frames": settings.get('num_frames', 8)
-        }
-        print(f"Sending original videos to model server: {original_video_dir}")
-        await async_http_post(full_url_original, json_data=data_original)
-        
-        # Process adversarial videos
-        full_url_adversarial = f"{base_url}/{settings['model_name']}/{model}"
-        data_adversarial = {
-            "video_directory": adversarial_video_dir,
-            "num_frames": settings.get('num_frames', 8)
-        }
-        print(f"Sending adversarial videos to model server: {adversarial_video_dir}")
-        await async_http_post(full_url_adversarial, json_data=data_adversarial)
+        original_video_dir = settings.get('original_video_dir', 'dataprocess/test_video')  
+        adversarial_video_dir = settings.get('adversarial_video_dir', 'dataprocess/FGSM')  
 
+        # Check if directories exist
+        if not os.path.exists(original_video_dir):
+            print(f"⚠️ Warning: Original video directory '{original_video_dir}' not found. Skipping.")
+            continue
 
+        if not os.path.exists(adversarial_video_dir):
+            print(f"⚠️ Warning: Adversarial video directory '{adversarial_video_dir}' not found. Skipping.")
+
+        full_url = f"{base_url}/process-videos"
+        print(f"🔄 Sending request to process all videos at: {full_url}")
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(full_url) as response:
+                    if response.status == 200:
+                        json_response = await response.json()
+                        print("✅ Video processing completed:", json_response)
+                    else:
+                        print(f"❌ Error processing videos: {response.status}, {await response.text()}")
+            except Exception as e:
+                print(f"🔥 Exception during request: {e}")
 # 处理 XAI 配置
 async def process_xai_config(xai_config):
     base_url = xai_config['base_url']
@@ -210,8 +237,8 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8880)
 
-import asyncio
-import json
+# import asyncio
+# import json
 
 # 假设您的处理函数和其他必要的导入已经完成
 
@@ -222,12 +249,12 @@ import json
 
 
 
-# 主函数
-def main():
-    config = load_config()
-    asyncio.run(run_pipeline_from_config(config))
+# # 主函数
+# def main():
+#     config = load_config()
+#     asyncio.run(run_pipeline_from_config(config))
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 

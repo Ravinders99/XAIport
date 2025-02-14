@@ -7,6 +7,8 @@ import aiohttp
 import os
 from attention_extractor import AttentionExtractor  
 import torch 
+import json
+import matplotlib.pyplot as plt
 app = FastAPI()
 staa_model = AttentionExtractor("facebook/timesformer-base-finetuned-k400", device="cpu")
 class XAIRequest(BaseModel):
@@ -88,6 +90,39 @@ async def staa_video_explain(request: VideoExplainRequest):
     except Exception as e:
         logging.error(f"Error in staa_video_explain: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
+@app.post("/visualize-attention/{video_name}")
+async def visualize_attention(video_name: str):
+    try:
+        # Load the attention JSON file
+        json_path = f"video_results/{video_name}/{video_name}_rs.json"
+        if not os.path.exists(json_path):
+            raise HTTPException(status_code=404, detail=f"Attention data for '{video_name}' not found.")
+
+        with open(json_path, 'r') as f:
+            attention_data = json.load(f)
+
+        # Extract and plot temporal attention
+        temporal_attention = [frame['mean_attention'] for frame in attention_data]
+
+        # Plot temporal attention
+        plt.figure(figsize=(10, 5))
+        plt.plot(temporal_attention, label=f'Temporal Attention - {video_name}', color='blue', marker='o')
+        plt.xlabel("Frame Number")
+        plt.ylabel("Attention Value")
+        plt.legend()
+        plt.grid(True)
+        plt.title(f"Temporal Attention Plot for {video_name}")
+
+        # Save plot
+        output_path = f"video_results/{video_name}/{video_name}_temporal_plot.png"
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+
+        return {"message": f"Attention visualization completed for {video_name}", "temporal_plot": output_path}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
 
 if __name__ == "__main__":
     import uvicorn
